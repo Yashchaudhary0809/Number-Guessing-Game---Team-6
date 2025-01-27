@@ -1,57 +1,87 @@
-#NUMBER GUESSING GAME 
+# Developer 1: Core Game Logic
 import random
+import time
 
-# Creating a Function
-def number_guessing_game():
-    print("Welcome to the Number Guessing Game!")
-    
-    while True:
-        # Set the range for the random number
-        lower_bound = int(input("Enter the lower bound of the range: "))
-        upper_bound = int(input("Enter the upper bound of the range: "))
-        
-        # Generate a random number between the specified bounds
-        number_to_guess = random.randint(lower_bound, upper_bound)
-        attempts = 0
-        guessed = False
-        
-        print(f"\nI have selected a number between {lower_bound} and {upper_bound}. Try to guess it!")
-        
-        # Entering into the loop
-        while not guessed:
-            user_guess = int(input("Enter your guess: "))
-            attempts += 1
-            
-            if user_guess < number_to_guess:
-                print("You are Too low! Try again.")
-            elif user_guess > number_to_guess:
-                print("You are Too high! Try again.")
-            else:
-                print(f"Congratulations! You've guessed the number {number_to_guess} in {attempts} attempts.")
-                guessed = True
-        
-        # Asking if the user wants to play again
-        play_again = input("Do you want to play again? (yes/no): ").strip().lower()
-        if play_again != 'yes':
-            print("Thank you for playing! Goodbye!")
-            break
+class GameEngine:
+    def __init__(self, initial_level=1):
+        self.level = initial_level
+        self.max_attempts = 10
 
-# Creating function for main menu
-def main_menu():
-    while True:
-        print("\nMain Menu")
-        print("1. Start Number Guessing Game")
-        print("2. Exit")
-        
-        choice = input("Enter your choice (1/2): ")
-        
-        if choice == '1':
-            number_guessing_game()
-        elif choice == '2':
-            print("Exiting the game. Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please select 1 or 2.")
+    def generate_challenge(self):
+        """Generate game challenge based on current level."""
+        upper_bound = 100 * self.level
+        return random.randint(1, upper_bound), 1, upper_bound
+
+# Developer 2: User Interface and Interaction
+class GameUI:
+    @staticmethod
+    def display_instructions():
+        """Display game instructions before starting."""
+        print("\n🎮 NUMBER GUESSING GAME INSTRUCTIONS 🎮")
+        print("1. You'll guess a random number in an increasing difficulty range")
+        print("2. Each level increases the number range and reduces attempts")
+        print("3. Hints will guide you closer to the target number")
+        print("4. Aim to guess with fewer attempts for a better score!")
+        print("5. Enter 'q' anytime to quit the game\n")
+        input("Press Enter to start the game...")
+
+    @staticmethod
+    def get_user_guess(lower, upper):
+        """Prompt user for guess with input validation."""
+        while True:
+            try:
+                guess = input(f"Guess a number between {lower} and {upper}: ")
+                if guess.lower() == 'q':
+                    return None
+                return int(guess)
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+
+# Developer 3: Game Mechanics and Logic
+class NumberGuessingGame:
+    def __init__(self):
+        self.engine = GameEngine()
+        self.ui = GameUI()
+
+    def play(self):
+        """Main game loop with level progression."""
+        self.ui.display_instructions()
+
+        while True:
+            target, lower, upper = self.engine.generate_challenge()
+            attempts = 0
+
+            print(f"\n--- Level {self.engine.level} ---")
+            print(f"Guess the number between {lower} and {upper}")
+
+            while attempts < self.engine.max_attempts:
+                guess = self.ui.get_user_guess(lower, upper)
+                
+                if guess is None:
+                    print("Game ended. Thanks for playing!")
+                    return
+
+                attempts += 1
+
+                if guess == target:
+                    print(f"🎉 Correct! You won Level {self.engine.level}")
+                    break
+                
+                hint = "Higher" if guess < target else "Lower"
+                print(f"Try {hint}. Attempts left: {self.engine.max_attempts - attempts}")
+
+            if attempts == self.engine.max_attempts:
+                print(f"Game Over! The number was {target}")
+
+            if input("Continue to next level? (y/n): ").lower() != 'y':
+                break
+
+            self.engine.level += 1
+            self.engine.max_attempts = max(10 - self.engine.level + 1, 3)
+
+def main():
+    game = NumberGuessingGame()
+    game.play()
 
 if __name__ == "__main__":
-    main_menu()
+    main()
