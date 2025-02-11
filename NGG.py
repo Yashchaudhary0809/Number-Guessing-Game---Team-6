@@ -1,7 +1,7 @@
 # Developer 1: Core Game Logic
 import random
 import time
-
+ 
 class GameEngine:
     def __init__(self, initial_level=1):
         self.level = initial_level
